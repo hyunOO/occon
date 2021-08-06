@@ -52,10 +52,15 @@ def cli_main():
     if args.model in ['moco', 'byol', 'supervised']:
         args.ckpt_dir = os.path.join(args.log_dir, args.ckpt_name, 'version_{}'.format(args.ckpt_version))
         args.ckpt_path = os.path.join(args.ckpt_dir, 'checkpoints', '{}.ckpt'.format(args.ckpt_epoch))
+        #checkpoint = torch.load(args.ckpt_path)
+        #print(checkpoint['state_dict'])
+
         model = model_class.load_from_checkpoint(args.ckpt_path)
         #model = model_class(**args.__dict__)
 
         if args.mode in ['seg', 'save_box', 'save_mask']:  # use CAM model
+            if args.model == 'supervised':
+                model.projector = nn.Identity()
             model = GradCAM(model.encoder, projector=model.projector, expand_res=args.expand_res)
 
     elif args.model == 'redo':
@@ -68,7 +73,10 @@ def cli_main():
 
     print('Model: {}  Dataset: {}  Mode: {}'.format(args.model, args.dataset, args.mode))
     if args.mode == 'lineval':
-        lineval(args, model)
+        if args.model == 'supervised':
+            lineval_supervised(args, model)
+        else:
+            lineval(args, model)
     elif args.mode == 'seg':
         seg(args, model)
     elif args.mode == 'save_box':
@@ -136,11 +144,35 @@ def lineval(args, model, device='cuda'):
 
         test_acc = accuracy(X_test, Y_test, best_classifier)
         print('Test acc.:{:.2f}'.format(test_acc * 100))
+
     else:
         raise NotImplementedError
 
     with open(os.path.join(args.ckpt_dir, 'lineval.txt'), 'a') as f:
         f.write('{}\t{}\te{}\t{:.2f}\n'.format(args.dataset, args.clf_type, args.ckpt_epoch, test_acc * 100))
+
+
+def lineval_supervised(args, model, device='cuda'):
+    model = model.to(device)
+    #model.encoder = model.encoder.to(device)
+    #model.projector = model.projector.to(device)
+    model.eval()
+
+    normalize = get_normalization(args.normalize)
+    t_norm = FinetuneTransform(image_size=args.image_size, normalize=normalize, crop='center')
+
+    dm = load_finetune_datamodule(args.dataset, batch_size=args.batch_size, num_workers=args.num_workers,
+                                  train_transform=t_norm, test_transform=t_norm)
+
+    print('Computing features...')
+    with torch.no_grad():
+        X_test, Y_test = collect_outputs(model.encoder, dm.test_dataloader())
+    print(f'X_test shape: {X_test.shape}')
+
+    # train and evaluate linear classifier
+    print('Evaluating classifier...')
+    test_acc = accuracy(X_test, Y_test, nn.Identity())
+    print('Test acc.:{:.2f}'.format(test_acc * 100))
 
 
 def seg(args, model, device='cuda'):

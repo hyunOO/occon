@@ -13,8 +13,9 @@ def collect_outputs(model, loader, device='cuda', **kwargs):
     return outs, labels
 
 
-def accuracy(X, Y, classifier):
+def accuracy(X, Y, classifier, device='cuda'):
     with torch.no_grad():
         preds = classifier(X).argmax(1)
+
     acc = (preds == Y).float().mean().item()
     return acc

@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
 import math
 
+from copy import deepcopy
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,8 +21,9 @@ class SupervisedModel(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
         self.encoder = self.load_backbone(arch, image_size, kwargs['num_classes'])
-        self.projector = self.encoder.fc
-        self.encoder.fc = nn.Identity()
+        #self.projector = deepcopy(self.encoder.fc)
+        #self.encoder.fc = nn.Identity()
+        #self.projector = nn.Identity()
 
     def load_backbone(self, arch, image_size, num_classes):
         assert image_size in [32, 224]
@@ -62,6 +65,8 @@ class SupervisedModel(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         inputs, labels = batch
         inputs = inputs[0]
+        #predicted = self.encoder(inputs)
+        #logits = self.projector(predicted)
         logits = self.encoder(inputs)
 
         loss = F.cross_entropy(logits, labels)
@@ -74,7 +79,9 @@ class SupervisedModel(pl.LightningModule):
         pass  # no validation error
 
     def forward(self, x):
+        #return self.projector(self.encoder(x))
         return self.encoder(x)
+        #return self.encoder(x)
 
     @staticmethod
     def add_model_specific_args(parent_parser):

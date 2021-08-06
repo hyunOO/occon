@@ -16,7 +16,7 @@ def get_normalization(normalize):
 
 class PretrainTransformBase:
     """Base transformations for pre-training"""
-    def __init__(self, image_size=224, crop_scale=(0.08, 1.), view=2, use_mask=False):
+    def __init__(self, image_size=224, crop_scale=(0.08, 1.), view=2, use_mask=False, normalize=None):
         self.view = view
         transform = [
             T.RandomResizedCrop(image_size, scale=crop_scale),
@@ -29,6 +29,11 @@ class PretrainTransformBase:
         if not use_mask:
             transform.append(T.ToTensor())
             transform_orig.append(T.ToTensor())
+            if self.view == 1:
+                if normalize is not None:
+                    transform.append(normalize)
+                    transform_orig.append(normalize)
+
         self.transform = T.Compose(transform)
         self.transform_orig = T.Compose(transform_orig)
 
