@@ -25,6 +25,14 @@ def load_pretrain_datamodule(dataset, ft_datasets=(),
         else:
             train = FlowersSegmentation(DATA_ROOT, split='train', transform=train_transform)
 
+    elif dataset == 'flowers_supervised':
+        # num_classes: 200
+        train = ImageFolder(os.path.join(DATA_ROOT, 'flowers102/trn'), transform=train_transform)
+
+    elif dataset == 'cub_supervised':
+        # num_classes: 200
+        train = ImageFolder(os.path.join(DATA_ROOT, 'CUB_200_2011/train'), transform=train_transform)
+
     # COCO datasets
     elif dataset == 'coco':
         train = COCO(DATA_ROOT, split='train', transform=train_transform)
@@ -114,7 +122,7 @@ def _load_online_finetune_datasets(ft_datasets=(), transform=None):
 
         if ft_dataset == 'flowers':
             # num_classes: 102
-            ft_train = ImageFolder(os.path.join(DATA_ROOT, 'flowers102/trn'), transform=transform)
+            ft_train = imagefolder(os.path.join(data_root, 'flowers102/trn'), transform=transform)
             ft_test = ImageFolder(os.path.join(DATA_ROOT, 'flowers102/tst'), transform=transform)
             finetune += [ft_train, ft_test]
 

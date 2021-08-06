@@ -1,3 +1,5 @@
+from .supervised import SupervisedModel
+
 from .moco import MoCo
 from .moco_bgmix import MoCoBGMix
 from .moco_mixup import MoCoMixup
@@ -14,9 +16,10 @@ from .segmentation import load_redo_model
 def get_model_class(name):
     """Return model class by name"""
 
-    #TODO: refactor mixup variants
+    if name == 'supervised':
+        model_class = SupervisedModel
 
-    if name == 'moco':
+    elif name == 'moco':
         model_class = MoCo
     elif name == 'moco_bgmix':
         model_class = MoCoBGMix
