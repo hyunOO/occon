@@ -25,7 +25,7 @@ def cli_main():
     parser.add_argument("--mode", default='lineval', type=str, help="inference mode")
     parser.add_argument('--clf_type', default='lbfgs', type=str, help="classifier type")
     parser.add_argument('--save_path', default=None, type=str, help="save boxes/masks in the path")
-    parser.add_argument('--cam_score', default='con', type=str, help="CAM score function")
+    parser.add_argument('--cam_score', default='con', type=str, help="CAM score function", choices=['con', 'sup'])
     parser.add_argument('--expand_res', default=1, type=int, help="expand resolution for CAM")
     parser.add_argument('--cam_iters', default=1, type=int, help="CAM # of iterative refinements")
     parser.add_argument('--apply_crf', action='store_true', help="apply CRF for segmentation masks")
@@ -49,7 +49,7 @@ def cli_main():
     pl.seed_everything(1234)
 
     # load model
-    if args.model in ['moco', 'byol']:
+    if args.model in ['moco', 'byol', 'supervised']:
         args.ckpt_dir = os.path.join(args.log_dir, args.ckpt_name, 'version_{}'.format(args.ckpt_version))
         args.ckpt_path = os.path.join(args.ckpt_dir, 'checkpoints', '{}.ckpt'.format(args.ckpt_epoch))
         model = model_class.load_from_checkpoint(args.ckpt_path)
@@ -62,6 +62,7 @@ def cli_main():
         args.image_size = 128
         args.normalize = 'redo'
         model = load_redo_model(args.dataset)
+
     else:
         raise ValueError('No matching model class')
 

@@ -122,7 +122,7 @@ def _load_online_finetune_datasets(ft_datasets=(), transform=None):
 
         if ft_dataset == 'flowers':
             # num_classes: 102
-            ft_train = imagefolder(os.path.join(data_root, 'flowers102/trn'), transform=transform)
+            ft_train = ImageFolder(os.path.join(data_root, 'flowers102/trn'), transform=transform)
             ft_test = ImageFolder(os.path.join(DATA_ROOT, 'flowers102/tst'), transform=transform)
             finetune += [ft_train, ft_test]
 

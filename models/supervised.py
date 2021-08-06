@@ -84,8 +84,8 @@ class SupervisedModel(pl.LightningModule):
         parser.add_argument("--image_size", default=224, type=int)
 
         # training params
-        parser.add_argument("--base_lr", default=0.1, type=float)
-        parser.add_argument("--final_lr", default=0., type=float)
+        parser.add_argument("--base_lr", default=0.03, type=float)
+        parser.add_argument("--final_lr", default=1e-3, type=float)
         parser.add_argument('--global_batch_size', default=None, type=int)  # default: inference mode
         parser.add_argument("--min_crop_scale", default=0.08, type=float)  # stronger augmentation
         parser.add_argument("--max_crop_scale", default=1., type=float)
